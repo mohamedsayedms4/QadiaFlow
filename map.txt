@@ -1,0 +1,412 @@
+'========================
+' Base / Shared
+'========================
+class "BaseEntity\n(كيان أساسي)" as BaseEntity {
+  +id (المعرّف) : Long
+  +createdAt (تاريخ الإنشاء) : LocalDateTime
+  +updatedAt (تاريخ آخر تعديل) : LocalDateTime
+}
+
+class "Tenant\n(المكتب/التينانت)" as Tenant {
+  +name (اسم المكتب) : String
+  +status (الحالة) : TenantStatus
+}
+
+enum TenantStatus {
+  ACTIVE (نشط)
+  SUSPENDED (موقوف)
+}
+
+'========================
+' IAM (Auth/RBAC)
+'========================
+class "User\n(مستخدم)" as User {
+  +tenantId (معرّف المكتب) : Long
+  +username (اسم المستخدم) : String
+  +email (البريد الإلكتروني) : String
+  +phone (رقم الهاتف) : String
+  +passwordHash (تجزئة كلمة المرور) : String
+  +status (حالة المستخدم) : UserStatus
+  +lastLoginAt (آخر تسجيل دخول) : LocalDateTime
+}
+
+enum UserStatus {
+  ACTIVE (نشط)
+  DISABLED (موقوف)
+}
+
+class "Role\n(دور/صلاحية وظيفية)" as Role {
+  +tenantId (معرّف المكتب) : Long
+  +name (اسم الدور) : String
+  +description (وصف الدور) : String
+}
+
+class "Permission\n(إذن/صلاحية)" as Permission {
+  +code (كود الإذن) : String
+  +description (وصف الإذن) : String
+}
+
+class "UserRole\n(ربط مستخدم-دور)" as UserRole {
+  +tenantId (معرّف المكتب) : Long
+  +userId (معرّف المستخدم) : Long
+  +roleId (معرّف الدور) : Long
+}
+
+class "RolePermission\n(ربط دور-إذن)" as RolePermission {
+  +tenantId (معرّف المكتب) : Long
+  +roleId (معرّف الدور) : Long
+  +permissionCode (كود الإذن) : String
+}
+
+'========================
+' Reference / Settings
+'========================
+class "CaseCategory\n(تصنيف القضية)" as CaseCategory {
+  +tenantId (معرّف المكتب) : Long
+  +name (اسم التصنيف) : String
+  +isActive (مفعل) : Boolean
+}
+
+class "Court\n(محكمة)" as Court {
+  +tenantId (معرّف المكتب) : Long
+  +name (اسم المحكمة) : String
+  +city (المدينة) : String
+  +isActive (مفعل) : Boolean
+}
+
+'========================
+' Clients / Parties
+'========================
+class "Client\n(موكل)" as Client {
+  +tenantId (معرّف المكتب) : Long
+  +type (نوع الموكل) : ClientType
+  +name (الاسم) : String
+  +nationalId (الرقم القومي/هوية) : String
+  +taxId (الرقم الضريبي) : String
+  +notes (ملاحظات) : String
+}
+
+enum ClientType {
+  PERSON (فرد)
+  COMPANY (شركة)
+}
+
+class "ClientContact\n(بيانات تواصل الموكل)" as ClientContact {
+  +clientId (معرّف الموكل) : Long
+  +phone (الهاتف) : String
+  +email (البريد) : String
+  +address (العنوان) : String
+  +isPrimary (أساسي) : Boolean
+}
+
+'========================
+' Cases
+'========================
+class "Case\n(قضية)" as Case {
+  +tenantId (معرّف المكتب) : Long
+  +internalCode (رقم المكتب/كود داخلي) : String
+  +subject (موضوع القضية) : String
+  +status (حالة القضية) : CaseStatus
+  +responsibleUserId (المحامي المسؤول) : Long
+  +categoryId (معرّف التصنيف) : Long
+}
+
+enum CaseStatus {
+  NEW (جديدة)
+  ACTIVE (نشطة)
+  ON_HOLD (معلقة)
+  CLOSED (مغلقة)
+  ARCHIVED (مؤرشفة)
+}
+
+class "CaseCourtInfo\n(بيانات المحكمة حسب الدرجة)" as CaseCourtInfo {
+  +caseId (معرّف القضية) : Long
+  +degree (درجة التقاضي) : CaseDegree
+  +courtId (معرّف المحكمة) : Long
+  +circuit (الدائرة/الهيئة) : String
+  +caseNumber (رقم القضية) : String
+  +caseYear (سنة القضية) : Integer
+}
+
+enum CaseDegree {
+  FIRST (أول درجة)
+  APPEAL (استئناف)
+  CASSATION (نقض)
+  EXECUTION (تنفيذ)
+}
+
+class "CaseParty\n(طرف/موكل داخل قضية)" as CaseParty {
+  +caseId (معرّف القضية) : Long
+  +clientId (معرّف الموكل) : Long
+  +role (صفة الطرف) : PartyRole
+  +representation (تمثيل الموكل) : String
+  +notes (ملاحظات) : String
+}
+
+enum PartyRole {
+  PLAINTIFF (مدعي)
+  DEFENDANT (مدعى عليه)
+  INTERVENOR (متدخل)
+  APPELLANT (مستأنِف)
+  RESPONDENT (مستأنف ضده)
+}
+
+class "CaseAcl\n(صلاحيات الوصول للقضية)" as CaseAcl {
+  +caseId (معرّف القضية) : Long
+  +userId (معرّف المستخدم) : Long
+  +accessLevel (مستوى الوصول) : AccessLevel
+}
+
+enum AccessLevel {
+  VIEW (عرض)
+  EDIT (تعديل)
+  FINANCE_VIEW (عرض مالي)
+  FINANCE_EDIT (تعديل مالي)
+}
+
+class "Session\n(جلسة)" as Session {
+  +tenantId (معرّف المكتب) : Long
+  +caseId (معرّف القضية) : Long
+  +sessionDate (تاريخ الجلسة) : LocalDateTime
+  +courtId (معرّف المحكمة) : Long
+  +circuit (الدائرة) : String
+  +result (نتيجة الجلسة) : String
+  +nextSessionDate (تاريخ الجلسة القادمة) : LocalDateTime
+  +notes (ملاحظات) : String
+}
+
+class "Task\n(مهمة)" as Task {
+  +tenantId (معرّف المكتب) : Long
+  +caseId (معرّف القضية) : Long
+  +title (عنوان المهمة) : String
+  +assigneeId (المسؤول عن التنفيذ) : Long
+  +dueDate (تاريخ الاستحقاق) : LocalDateTime
+  +priority (الأولوية) : TaskPriority
+  +status (حالة المهمة) : TaskStatus
+}
+
+enum TaskPriority {
+  LOW (منخفضة)
+  MEDIUM (متوسطة)
+  HIGH (عالية)
+}
+
+enum TaskStatus {
+  OPEN (مفتوحة)
+  IN_PROGRESS (قيد التنفيذ)
+  DONE (منتهية)
+  CANCELED (ملغاة)
+}
+
+'========================
+' Documents
+'========================
+class "Document\n(مستند)" as Document {
+  +tenantId (معرّف المكتب) : Long
+  +caseId (معرّف القضية) : Long
+  +contractId (معرّف العقد) : Long
+  +name (اسم الملف) : String
+  +mime (نوع الملف) : String
+  +size (الحجم) : Long
+  +storageKey (مسار التخزين) : String
+  +version (الإصدار) : Integer
+  +tags (وسوم) : String
+  +createdBy (تم الرفع بواسطة) : Long
+  +createdAt (تاريخ الرفع) : LocalDateTime
+}
+
+'========================
+' Contracts
+'========================
+class "Contract\n(عقد)" as Contract {
+  +tenantId (معرّف المكتب) : Long
+  +clientId (معرّف الموكل) : Long
+  +title (عنوان العقد) : String
+  +value (قيمة العقد) : BigDecimal
+  +startDate (تاريخ البداية) : LocalDate
+  +endDate (تاريخ النهاية) : LocalDate
+  +status (حالة العقد) : ContractStatus
+}
+
+enum ContractStatus {
+  DRAFT (مسودة)
+  ACTIVE (ساري)
+  ENDED (منتهي)
+}
+
+class "ContractVersion\n(نسخة عقد)" as ContractVersion {
+  +contractId (معرّف العقد) : Long
+  +version (رقم النسخة) : Integer
+  +documentId (معرّف المستند) : Long
+  +createdAt (تاريخ الإنشاء) : LocalDateTime
+}
+
+'========================
+' Finance
+'========================
+class "FeePlan\n(خطة أتعاب)" as FeePlan {
+  +tenantId (معرّف المكتب) : Long
+  +caseId (معرّف القضية) : Long
+  +clientId (معرّف الموكل) : Long
+  +currency (العملة) : String
+  +totalAmount (إجمالي الأتعاب) : BigDecimal
+  +status (حالة الخطة) : FeePlanStatus
+}
+
+enum FeePlanStatus {
+  ACTIVE (نشطة)
+  CLOSED (مغلقة)
+}
+
+class "FeeItem\n(بند أتعاب)" as FeeItem {
+  +feePlanId (معرّف خطة الأتعاب) : Long
+  +title (عنوان البند) : String
+  +stage (المرحلة) : String
+  +amount (قيمة البند) : BigDecimal
+  +dueDate (تاريخ الاستحقاق) : LocalDate
+  +status (حالة البند) : FeeItemStatus
+}
+
+enum FeeItemStatus {
+  DUE (مستحق)
+  PAID (مدفوع)
+  WAIVED (متنازل عنه)
+}
+
+class "Payment\n(دفعة/سداد)" as Payment {
+  +tenantId (معرّف المكتب) : Long
+  +feePlanId (معرّف خطة الأتعاب) : Long
+  +amount (المبلغ) : BigDecimal
+  +method (طريقة الدفع) : PaymentMethod
+  +receiptNo (رقم الإيصال) : String
+  +paidAt (تاريخ الدفع) : LocalDateTime
+  +createdBy (سجّله) : Long
+}
+
+enum PaymentMethod {
+  CASH (نقدي)
+  BANK_TRANSFER (تحويل بنكي)
+  CARD (بطاقة)
+  OTHER (أخرى)
+}
+
+class "Expense\n(مصروف قضية)" as Expense {
+  +tenantId (معرّف المكتب) : Long
+  +caseId (معرّف القضية) : Long
+  +title (عنوان المصروف) : String
+  +expenseType (نوع المصروف) : String
+  +amount (المبلغ) : BigDecimal
+  +expenseDate (تاريخ المصروف) : LocalDate
+  +attachmentDocId (مرفق مستند) : Long
+}
+
+'========================
+' Notifications / Audit
+'========================
+class "Notification\n(إشعار)" as Notification {
+  +tenantId (معرّف المكتب) : Long
+  +userId (معرّف المستخدم) : Long
+  +title (عنوان الإشعار) : String
+  +body (محتوى الإشعار) : String
+  +type (نوع الإشعار) : NotificationType
+  +readAt (وقت القراءة) : LocalDateTime
+  +createdAt (وقت الإنشاء) : LocalDateTime
+}
+
+enum NotificationType {
+  SESSION_REMINDER (تذكير جلسة)
+  PAYMENT_DUE (استحقاق سداد)
+  TASK_DUE (استحقاق مهمة)
+  SYSTEM (نظام)
+}
+
+class "AuditLog\n(سجل تدقيق)" as AuditLog {
+  +tenantId (معرّف المكتب) : Long
+  +actorId (منفذ العملية) : Long
+  +action (نوع العملية) : AuditAction
+  +entityType (نوع الكيان) : String
+  +entityId (معرّف الكيان) : Long
+  +beforeJson (قبل التعديل) : String
+  +afterJson (بعد التعديل) : String
+  +ip (عنوان IP) : String
+  +createdAt (وقت العملية) : LocalDateTime
+}
+
+enum AuditAction {
+  CREATE (إنشاء)
+  UPDATE (تعديل)
+  DELETE (حذف)
+  DOWNLOAD (تحميل)
+  UPLOAD (رفع)
+  PERMISSION_CHANGE (تغيير صلاحيات)
+}
+
+'========================
+' Inheritance
+'========================
+BaseEntity <|-- Tenant
+BaseEntity <|-- User
+BaseEntity <|-- Role
+BaseEntity <|-- Client
+BaseEntity <|-- Case
+BaseEntity <|-- Session
+BaseEntity <|-- Task
+BaseEntity <|-- Document
+BaseEntity <|-- Contract
+BaseEntity <|-- FeePlan
+BaseEntity <|-- Payment
+BaseEntity <|-- Expense
+BaseEntity <|-- Notification
+BaseEntity <|-- AuditLog
+BaseEntity <|-- Court
+BaseEntity <|-- CaseCategory
+
+'========================
+' Relationships
+'========================
+Tenant "1" o-- "0..*" User : owns (يمتلك)
+Tenant "1" o-- "0..*" Role : owns (يمتلك)
+Tenant "1" o-- "0..*" Client : owns (يمتلك)
+Tenant "1" o-- "0..*" Case : owns (يمتلك)
+Tenant "1" o-- "0..*" Court : owns (يمتلك)
+Tenant "1" o-- "0..*" CaseCategory : owns (يمتلك)
+
+Client "1" o-- "0..*" ClientContact : has (بيانات تواصل)
+Client "1" o-- "0..*" Contract : contracts (عقود)
+Contract "1" o-- "0..*" ContractVersion : versions (نسخ)
+ContractVersion "1" --> "1" Document : stored as (كمستند)
+
+CaseCategory "1" --> "0..*" Case : categorizes (يصنّف)
+User "1" --> "0..*" Case : responsible for (مسؤول)
+
+Case "1" o-- "0..*" CaseCourtInfo : court info (محكمة/درجة)
+CaseCourtInfo "1" --> "1" Court : in (محكمة)
+
+Case "1" o-- "0..*" CaseParty : parties (أطراف)
+CaseParty "1" --> "1" Client : client (موكل)
+
+Case "1" o-- "0..*" Session : sessions (جلسات)
+Case "1" o-- "0..*" Task : tasks (مهام)
+
+Case "1" o-- "0..*" CaseAcl : access (صلاحيات)
+CaseAcl "1" --> "1" User : user (مستخدم)
+
+Case "1" o-- "0..*" FeePlan : fee plans (خطط أتعاب)
+FeePlan "1" o-- "0..*" FeeItem : items (بنود)
+FeePlan "1" o-- "0..*" Payment : payments (مدفوعات)
+FeePlan "1" --> "1" Client : billed to (على موكل)
+
+Case "1" o-- "0..*" Expense : expenses (مصروفات)
+Expense "0..1" --> "1" Document : attachment (مرفق)
+
+Case "1" o-- "0..*" Document : documents (مستندات)
+Contract "1" o-- "0..*" Document : attachments (مرفقات)
+
+User "1" o-- "0..*" Notification : receives (يستقبل)
+User "1" --> "0..*" AuditLog : acts (ينفّذ)
+
+Role "1" o-- "0..*" RolePermission : grants (يمنح)
+User "1" o-- "0..*" UserRole : assigned (مُسنَد)
+RolePermission "1" --> "1" Permission : permission (إذن)
+
+@enduml
