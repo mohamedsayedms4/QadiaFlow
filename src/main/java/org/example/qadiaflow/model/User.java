@@ -2,6 +2,7 @@ package org.example.qadiaflow.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
@@ -13,11 +14,14 @@ import java.time.LocalDateTime;
                 @UniqueConstraint(columnNames = {"tenant_id", "email"})
         }
 )
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@SuperBuilder
 public class User extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
     @Column(nullable = false, length = 80)
     private String username;

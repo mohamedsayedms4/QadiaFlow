@@ -5,15 +5,14 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @SuperBuilder
 @Table(
         name = "contract_versions",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"contract_id", "version"})
+                @UniqueConstraint(columnNames = {"contract_id", "version"}),
+                @UniqueConstraint(columnNames = {"document_id"}) // يضمن 1..1 فعلاً
         },
         indexes = {
                 @Index(name = "idx_contract_versions_contract", columnList = "contract_id"),
@@ -22,14 +21,19 @@ import lombok.experimental.SuperBuilder;
 )
 public class ContractVersion extends BaseEntity {
 
-    @Column(name = "contract_id", nullable = false)
-    private Long contractId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "contract_id", nullable = false)
+    private Contract contract;
 
     @Column(nullable = false)
     private Integer version;
 
-    @Column(name = "document_id", nullable = false)
-    private Long documentId;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "document_id", nullable = false, unique = true)
+    private Document document;
 
-
+    @Override
+    protected void beforePersist() {
+        if (version == null) version = 1;
+    }
 }

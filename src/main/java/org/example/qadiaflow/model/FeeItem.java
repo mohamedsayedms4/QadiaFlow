@@ -20,8 +20,10 @@ import java.time.LocalDate;
 )
 public class FeeItem extends BaseEntity {
 
-    @Column(name = "fee_plan_id", nullable = false)
-    private Long feePlanId;
+    // FeePlan "1" o-- "0..*" FeeItem
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "fee_plan_id", nullable = false)
+    private FeePlan feePlan;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -39,8 +41,8 @@ public class FeeItem extends BaseEntity {
     @Column(nullable = false, length = 20)
     private FeeItemStatus status;
 
-    @PrePersist
-    protected void defaults() {
+    @Override
+    protected void beforePersist() {
         if (status == null) status = FeeItemStatus.DUE;
         if (stage != null && stage.isBlank()) stage = null;
     }

@@ -20,11 +20,14 @@ import java.time.LocalDateTime;
 )
 public class Notification extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    // User "1" o-- "0..*" Notification : receives
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -38,4 +41,12 @@ public class Notification extends BaseEntity {
 
     @Column(name = "read_at")
     private LocalDateTime readAt;
+
+    @Override
+    protected void beforePersist() {
+        // derive tenant automatically from user if not set
+        if (tenant == null && user != null) {
+            tenant = user.getTenant();
+        }
+    }
 }

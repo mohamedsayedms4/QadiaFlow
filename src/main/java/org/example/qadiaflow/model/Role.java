@@ -10,11 +10,14 @@ import lombok.*;
                 @UniqueConstraint(columnNames = {"tenant_id", "name"})
         }
 )
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@lombok.experimental.SuperBuilder
 public class Role extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
     @Column(nullable = false, length = 80)
     private String name;

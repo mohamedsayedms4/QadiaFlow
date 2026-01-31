@@ -1,12 +1,20 @@
 package org.example.qadiaflow.model;
 
-
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-public class Tenant extends BaseEntity{
+@Table(name = "tenants")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@SuperBuilder
+public class Tenant extends BaseEntity {
+
+    @Column(nullable = false, length = 150)
     private String name;
 
-
-    private TenantStatus status ;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private TenantStatus status;
 }

@@ -10,7 +10,9 @@ import lombok.*;
                 @UniqueConstraint(columnNames = {"code"})
         }
 )
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@lombok.experimental.SuperBuilder
 public class Permission extends BaseEntity {
 
     @Column(nullable = false, length = 120)

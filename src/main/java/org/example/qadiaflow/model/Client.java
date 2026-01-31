@@ -11,7 +11,9 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "clients")
 public class Client extends BaseEntity {
 
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
     @Enumerated(EnumType.STRING)
     private ClientType type;

@@ -8,15 +8,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @SuperBuilder
 @Table(
         name = "contracts",
         uniqueConstraints = {
-                // نفس عنوان العقد مينفعش يتكرر لنفس الموكل داخل نفس التينانت (اختياري حسب business)
                 @UniqueConstraint(columnNames = {"tenant_id", "client_id", "title"})
         },
         indexes = {
@@ -26,11 +23,13 @@ import java.time.LocalDate;
 )
 public class Contract extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "client_id", nullable = false)
-    private Long clientId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "client_id", nullable = false)
+    private Client client;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -45,8 +44,12 @@ public class Contract extends BaseEntity {
     @Column(nullable = false, length = 20)
     private ContractStatus status;
 
-    @PrePersist
-    protected void defaults() {
+    @Override
+    protected void beforePersist() {
         if (status == null) status = ContractStatus.DRAFT;
+
+        if (tenant == null && client != null) {
+            tenant = client.getTenant();
+        }
     }
 }

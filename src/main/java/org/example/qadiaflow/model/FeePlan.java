@@ -20,17 +20,22 @@ import java.math.BigDecimal;
 )
 public class FeePlan extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "case_id", nullable = false)
-    private Long caseId;
+    // Case "1" o-- "0..*" FeePlan
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "case_id", nullable = false)
+    private Case caseRef;
 
-    @Column(name = "client_id", nullable = false)
-    private Long clientId;
+    // FeePlan "1" --> "1" Client : billed to
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "client_id", nullable = false)
+    private Client client;
 
     @Column(nullable = false, length = 10)
-    private String currency; // e.g. "EGP", "USD"
+    private String currency; // "EGP", "USD"
 
     @Column(name = "total_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;
@@ -39,8 +44,9 @@ public class FeePlan extends BaseEntity {
     @Column(nullable = false, length = 20)
     private FeePlanStatus status;
 
-    @PrePersist
-    protected void defaults() {
+    @Override
+    protected void beforePersist() {
+        if (tenant == null && caseRef != null) tenant = caseRef.getTenant();
         if (status == null) status = FeePlanStatus.ACTIVE;
         if (currency != null && currency.isBlank()) currency = null;
     }

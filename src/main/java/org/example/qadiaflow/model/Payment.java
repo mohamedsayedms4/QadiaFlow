@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Table(
         name = "payments",
         uniqueConstraints = {
-                // يمنع تكرار رقم إيصال داخل نفس التينانت (اختياري حسب نظامك)
                 @UniqueConstraint(columnNames = {"tenant_id", "receipt_no"})
         },
         indexes = {
@@ -24,11 +23,14 @@ import java.time.LocalDateTime;
 )
 public class Payment extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "fee_plan_id", nullable = false)
-    private Long feePlanId;
+    // FeePlan "1" o-- "0..*" Payment
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "fee_plan_id", nullable = false)
+    private FeePlan feePlan;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
@@ -43,15 +45,12 @@ public class Payment extends BaseEntity {
     @Column(name = "paid_at", nullable = false)
     private LocalDateTime paidAt;
 
-    /**
-     * Who recorded the payment (User ID).
-     * BaseEntity.createdBy is String in your project, so we keep this as Long.
-     */
     @Column(name = "recorded_by_user_id", nullable = false)
     private Long recordedByUserId;
 
     @Override
     protected void beforePersist() {
+        if (tenant == null && feePlan != null) tenant = feePlan.getTenant();
         if (paidAt == null) paidAt = LocalDateTime.now();
         if (receiptNo != null && receiptNo.isBlank()) receiptNo = null;
     }

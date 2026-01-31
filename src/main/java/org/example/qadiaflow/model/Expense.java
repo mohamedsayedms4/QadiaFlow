@@ -20,11 +20,14 @@ import java.time.LocalDate;
 )
 public class Expense extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "case_id", nullable = false)
-    private Long caseId;
+    // Case "1" o-- "0..*" Expense : expenses
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "case_id", nullable = false)
+    private Case caseRef;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -38,6 +41,15 @@ public class Expense extends BaseEntity {
     @Column(name = "expense_date", nullable = false)
     private LocalDate expenseDate;
 
-    @Column(name = "attachment_doc_id")
-    private Long attachmentDocId;
+    // Expense "0..1" --> "1" Document : attachment
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attachment_doc_id")
+    private Document attachment;
+
+    @Override
+    protected void beforePersist() {
+        if (tenant == null && caseRef != null) {
+            tenant = caseRef.getTenant();
+        }
+    }
 }

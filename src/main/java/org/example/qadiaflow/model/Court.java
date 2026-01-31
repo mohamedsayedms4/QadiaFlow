@@ -1,18 +1,25 @@
 package org.example.qadiaflow.model;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@SuperBuilder
+@Table(
+        name = "courts",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"tenant_id", "name", "city"})
+        }
+)
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@lombok.experimental.SuperBuilder
 public class Court extends BaseEntity {
 
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
+
     private String name;
     private String city;
     private Boolean isActive;

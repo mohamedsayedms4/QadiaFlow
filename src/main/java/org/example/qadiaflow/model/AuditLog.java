@@ -19,11 +19,14 @@ import lombok.experimental.SuperBuilder;
 )
 public class AuditLog extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "actor_id", nullable = false)
-    private Long actorId;
+    // User "1" --> "0..*" AuditLog : acts
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "actor_id", nullable = false)
+    private User actor;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 40)
@@ -45,4 +48,11 @@ public class AuditLog extends BaseEntity {
 
     @Column(length = 45)
     private String ip;
+
+    @Override
+    protected void beforePersist() {
+        if (tenant == null && actor != null) {
+            tenant = actor.getTenant();
+        }
+    }
 }

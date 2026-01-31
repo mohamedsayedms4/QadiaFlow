@@ -5,10 +5,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @SuperBuilder
 @Table(
         name = "documents",
@@ -22,14 +20,19 @@ import lombok.experimental.SuperBuilder;
 )
 public class Document extends BaseEntity {
 
-    @Column(name = "tenant_id", nullable = false)
-    private Long tenantId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Tenant tenant;
 
-    @Column(name = "case_id")
-    private Long caseId;
+    // Case "1" o-- "0..*" Document : documents
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id")
+    private Case caseRef;
 
-    @Column(name = "contract_id")
-    private Long contractId;
+    // Contract "1" o-- "0..*" Document : attachments
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contract_id")
+    private Contract contract;
 
     @Column(nullable = false, length = 255)
     private String name;
@@ -46,11 +49,18 @@ public class Document extends BaseEntity {
     @Column(nullable = false)
     private Integer version;
 
-    /**
-     * Comma-separated tags (e.g. "contract,scan,important")
-     */
     @Column(length = 500)
     private String tags;
 
+    @Override
+    protected void beforePersist() {
+        // Auto-derive tenant if missing (from case/contract)
+        if (tenant == null) {
+            if (caseRef != null) tenant = caseRef.getTenant();
+            else if (contract != null) tenant = contract.getTenant();
+        }
 
+        if (version == null) version = 1;
+        if (tags != null && tags.isBlank()) tags = null;
+    }
 }
