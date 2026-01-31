@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+/**
+ * @author Mohamed Sayed
+ * @date 2026-01-31
+ */
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor

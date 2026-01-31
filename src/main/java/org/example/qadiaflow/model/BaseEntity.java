@@ -6,6 +6,10 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
+/**
+ * @author Mohamed Sayed
+ * @date 2026-01-31
+ */
 @MappedSuperclass
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor

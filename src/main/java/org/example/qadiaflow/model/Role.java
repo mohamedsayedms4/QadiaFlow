@@ -3,6 +3,10 @@ package org.example.qadiaflow.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * @author Mohamed Sayed
+ * @date 2026-01-31
+ */
 @Entity
 @Table(
         name = "roles",

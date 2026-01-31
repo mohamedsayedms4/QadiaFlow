@@ -7,6 +7,10 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * @author Mohamed Sayed
+ * @date 2026-01-31
+ */
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor

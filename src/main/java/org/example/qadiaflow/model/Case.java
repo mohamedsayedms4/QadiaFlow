@@ -5,6 +5,10 @@ import lombok.*;
 
 import lombok.experimental.SuperBuilder;
 
+/**
+ * @author Mohamed Sayed
+ * @date 2026-01-31
+ */
 @Entity
 @Table(
         name = "cases",
