@@ -3,7 +3,7 @@ package org.example.qadiaflow.presentation.mapper;
 import org.example.qadiaflow.domain.model.Tenant;
 import org.example.qadiaflow.domain.model.User;
 import org.example.qadiaflow.domain.model.UserStatus;
-import org.example.qadiaflow.presentation.dto.RegisterRequest;
+import org.example.qadiaflow.presentation.dto.auth.RegisterRequest;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")

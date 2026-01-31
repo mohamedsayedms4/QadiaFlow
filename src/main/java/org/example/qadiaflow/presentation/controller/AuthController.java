@@ -1,10 +1,11 @@
 package org.example.qadiaflow.presentation.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.qadiaflow.application.usecase.auth.AuthService;
-import org.example.qadiaflow.presentation.dto.AuthResponse;
-import org.example.qadiaflow.presentation.dto.LoginRequest;
-import org.example.qadiaflow.presentation.dto.RegisterRequest;
+import org.example.qadiaflow.presentation.dto.auth.AuthResponse;
+import org.example.qadiaflow.presentation.dto.auth.LoginRequest;
+import org.example.qadiaflow.presentation.dto.auth.RegisterRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,12 +17,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest req) {
         return ResponseEntity.ok(authService.register(req));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest req) {
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest req) {
         return ResponseEntity.ok(authService.login(req));
     }
 }

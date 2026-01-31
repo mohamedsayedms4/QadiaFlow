@@ -2,7 +2,7 @@ package org.example.qadiaflow.presentation.advice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.example.qadiaflow.application.exception.BadException;
+import org.example.qadiaflow.application.exception.BadRequestException;
 import org.example.qadiaflow.application.exception.NotFoundException;
 import org.example.qadiaflow.application.exception.UserAlreadyExists;
 import org.springframework.http.HttpStatus;
@@ -48,9 +48,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
-    @ExceptionHandler(BadException.class)
+    @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiErrorResponse> handleBadRequest(
-            BadException e,
+            BadRequestException e,
             HttpServletRequest request
     ) {
         ApiErrorResponse body = ApiErrorResponse.builder()

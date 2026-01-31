@@ -10,7 +10,8 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,10 +22,16 @@ public class JwtService {
     private final JwtProperties props;
 
     private SecretKey key() {
-        return Keys.hmacShaKeyFor(props.getSecret().getBytes(StandardCharsets.UTF_8));
+        byte[] bytes = props.getSecret().getBytes(StandardCharsets.UTF_8);
+
+        // HS256 requires >= 32 bytes
+        if (bytes.length < 32) {
+            throw new IllegalStateException("app.jwt.secret must be at least 32 bytes for HS256");
+        }
+        return Keys.hmacShaKeyFor(bytes);
     }
 
-    public TokenResult generate(Long userId, Long tenantId, String username, List<String> roles) {
+    public TokenResult generateAccessToken(Long userId, Long tenantId, String username, List<String> roles) {
         Instant now = Instant.now();
         Instant exp = now.plus(props.getTtlMinutes(), ChronoUnit.MINUTES);
 
@@ -36,14 +43,13 @@ public class JwtService {
                 .claim("tenantId", tenantId)
                 .claim("username", username)
                 .claim("roles", roles)
-                .signWith(key(), Jwts.SIG.HS256)   // JJWT 0.13.x
+                .signWith(key(), Jwts.SIG.HS256)
                 .compact();
 
         return new TokenResult(token, exp);
     }
 
     public Claims parseAndValidate(String token) {
-        // JJWT 0.13.x style parsing: verifyWith(...).build().parseSignedClaims(...)
         return Jwts.parser()
                 .requireIssuer(props.getIssuer())
                 .verifyWith(key())

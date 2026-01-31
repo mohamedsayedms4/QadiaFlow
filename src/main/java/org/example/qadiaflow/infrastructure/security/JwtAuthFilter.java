@@ -58,12 +58,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
 
-            // principal = userId (ممكن تعمل Principal class بعدين)
             var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (JwtException ex) {
-            // token invalid/expired -> نخلي Spring يرد 401 على endpoints المحمية
             SecurityContextHolder.clearContext();
         }
 

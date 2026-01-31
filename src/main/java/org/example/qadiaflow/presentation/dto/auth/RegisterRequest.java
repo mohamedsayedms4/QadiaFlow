@@ -1,4 +1,4 @@
-package org.example.qadiaflow.presentation.dto;
+package org.example.qadiaflow.presentation.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
