@@ -36,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtTokenService;
     private final MessageUtil msg;
     private final UserMapper userMapper;
+
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest req) {
@@ -54,7 +55,6 @@ public class AuthServiceImpl implements AuthService {
         User user = userMapper.toNewUser(req, tenant);
         user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
 
-
         user = userPort.save(user);
 
         Role defaultRole = rolePort.findByTenantAndName(tenant.getId(), "USER")
@@ -72,6 +72,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 tenant.getId(),
                 user.getUsername(),
+                user.getEmail(),
                 roles
         );
 
@@ -100,6 +101,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 tenantId,
                 user.getUsername(),
+                user.getEmail(),
                 roles
         );
 

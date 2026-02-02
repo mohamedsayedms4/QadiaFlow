@@ -31,9 +31,16 @@ public class JwtService {
         return Keys.hmacShaKeyFor(bytes);
     }
 
+
     public TokenResult generateAccessToken(Long userId, Long tenantId, String username, List<String> roles) {
+        return generateAccessToken(userId, tenantId, username, username, roles);
+    }
+
+    public TokenResult generateAccessToken(Long userId, Long tenantId, String username, String email, List<String> roles) {
         Instant now = Instant.now();
         Instant exp = now.plus(props.getTtlMinutes(), ChronoUnit.MINUTES);
+
+        String safeEmail = (email == null || email.isBlank()) ? username : email;
 
         String token = Jwts.builder()
                 .issuer(props.getIssuer())
@@ -42,6 +49,7 @@ public class JwtService {
                 .expiration(Date.from(exp))
                 .claim("tenantId", tenantId)
                 .claim("username", username)
+                .claim("email", safeEmail)
                 .claim("roles", roles)
                 .signWith(key(), Jwts.SIG.HS256)
                 .compact();
